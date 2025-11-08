@@ -18,9 +18,10 @@ export const styles = StyleSheet.create({
     },
     loginContent: {
         width: '100%',
-        maxWidth: 400,
+        maxWidth: 450,
     },
     logoContainer: {
+        paddingTop: 60,
         alignItems: 'center',
         marginBottom: 40,
     },
@@ -73,28 +74,6 @@ export const styles = StyleSheet.create({
             },
         }),
     },
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff',
-        borderWidth: 2,
-        borderColor: '#e5e7eb',
-        borderRadius: 15,
-        padding: 16,
-        marginBottom: 30,
-    },
-    googleIcon: {
-        fontSize: 24,
-        marginRight: 10,
-        fontWeight: 'bold',
-        color: '#4285F4',
-    },
-    googleButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-    },
     input: {
         backgroundColor: '#f9fafb',
         borderWidth: 1,
@@ -103,6 +82,7 @@ export const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 12,
         fontSize: 16,
+        color: '#000000'
     },
     authButton: {
         backgroundColor: '#22c55e',
