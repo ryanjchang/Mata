@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LoginScreen } from '../screens/LoginScreen';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ScannerScreen } from '../screens/ScannerScreen';
-import { SocialScreen } from '../screens/SocialScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
-import { HomeIcon, ScanIcon, SocialIcon, ProfileIcon } from '../components/Icons';
+import React, { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { LoginScreen } from "../screens/LoginScreen";
+import { HomeScreen } from "../screens/HomeScreen";
+import { ScannerScreen } from "../screens/ScannerScreen";
+import { SocialScreen } from "../screens/SocialScreen";
+import { ProfileScreen } from "../screens/ProfileScreen";
+import {
+  HomeIcon,
+  ScanIcon,
+  SocialIcon,
+  ProfileIcon,
+} from "../components/Icons";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,13 +19,13 @@ export default function App() {
   //const [user, setUser] = useState(null);
 
   const [user, setUser] = useState({
-    name: 'Alex Green',
-    email: 'alex@ecoscan.com',
+    name: "Alex Green",
+    email: "alex@ecoscan.com",
     points: 450,
     itemsRecycled: 89,
-    avatar: '♻️'
+    avatar: "♻️",
   });
-  
+
   const [scannedItems, setScannedItems] = useState([]);
 
   // if (!user) {
@@ -28,17 +33,18 @@ export default function App() {
   // }
 
   return (
+    <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: '#10b981',
-          tabBarInactiveTintColor: '#9ca3af',
+          tabBarActiveTintColor: "#10b981",
+          tabBarInactiveTintColor: "#9ca3af",
           headerShown: false,
         }}
       >
         <Tab.Screen name="Home" options={{ tabBarIcon: HomeIcon }}>
           {(props) => <HomeScreen {...props} user={user} />}
         </Tab.Screen>
-        <Tab.Screen name="Scan" options={{ tabBarIcon: ScanIcon }}>
+        <Tab.Screen name="Scan">
           {(props) => (
             <ScannerScreen
               {...props}
@@ -49,10 +55,13 @@ export default function App() {
             />
           )}
         </Tab.Screen>
-        <Tab.Screen name="Social" component={SocialScreen} options={{ tabBarIcon: SocialIcon }} />
-        <Tab.Screen name="Profile" options={{ tabBarIcon: ProfileIcon }}>
-          {(props) => <ProfileScreen {...props} user={user} scannedItems={scannedItems} />}
+        <Tab.Screen name="Profile">
+          {(props) => (
+            <ProfileScreen {...props} user={user} scannedItems={scannedItems} />
+          )}
         </Tab.Screen>
+        <Tab.Screen name="Social" component={SocialScreen} />
       </Tab.Navigator>
+    </NavigationContainer>
   );
 }

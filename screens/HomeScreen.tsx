@@ -4,6 +4,7 @@ import { styles } from '../styles/styles';
 import { mockPosts } from '../utils/mockData';
 
 export const HomeScreen = ({ user }) => {
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
