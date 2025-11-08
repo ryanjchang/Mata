@@ -11,15 +11,23 @@ import { HomeIcon, ScanIcon, SocialIcon, ProfileIcon } from '../components/Icons
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [user, setUser] = useState(null);
+  //const [user, setUser] = useState(null);
+
+  const [user, setUser] = useState({
+    name: 'Alex Green',
+    email: 'alex@ecoscan.com',
+    points: 450,
+    itemsRecycled: 89,
+    avatar: '♻️'
+  });
+  
   const [scannedItems, setScannedItems] = useState([]);
 
-  if (!user) {
-    return <LoginScreen setUser={setUser} />;
-  }
+  // if (!user) {
+  //   return <LoginScreen setUser={setUser} />;
+  // }
 
   return (
-    <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
           tabBarActiveTintColor: '#10b981',
@@ -46,6 +54,5 @@ export default function App() {
           {(props) => <ProfileScreen {...props} user={user} scannedItems={scannedItems} />}
         </Tab.Screen>
       </Tab.Navigator>
-    </NavigationContainer>
   );
 }
