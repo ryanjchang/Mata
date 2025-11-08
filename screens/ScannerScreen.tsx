@@ -108,32 +108,57 @@ export const ScannerScreen = ({ user, setUser, scannedItems, setScannedItems }) 
   }
 
   return (
-    <View style={styles.scannerContainer}>
-      {scanning ? (
-        <View style={styles.scanningOverlay}>
-          <ActivityIndicator size="large" color="#10b981" />
-          <Text style={styles.scanningText}>Analyzing item...</Text>
-        </View>
-      ) : (
-        <>
+  <View style={styles.scannerContainer}>
+    {scanning ? (
+      <View style={styles.scanningOverlay}>
+        <ActivityIndicator size="large" color="#10b981" />
+        <Text style={styles.scanningText}>Analyzing item...</Text>
+      </View>
+    ) : (
+      <>
+        {/* Camera Preview */}
+        <CameraView
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          facing="back"
+          ref={cameraRef}
+        />
+        
+        {/* Scan Frame Overlay */}
+        <View style={{ 
+          position: 'absolute', 
+          top: '50%', 
+          left: '50%', 
+          marginLeft: -125, 
+          marginTop: -125 
+        }}>
           <View style={styles.scanFrame}>
             <View style={[styles.corner, styles.topLeft]} />
             <View style={[styles.corner, styles.topRight]} />
             <View style={[styles.corner, styles.bottomLeft]} />
             <View style={[styles.corner, styles.bottomRight]} />
           </View>
-          <Text style={styles.scanInstruction}>Position item in frame</Text>
+        </View>
+        
+        <Text style={[styles.scanInstruction, { position: 'absolute', top: '65%', alignSelf: 'center' }]}>
+          Position item in frame
+        </Text>
 
-          <View style={styles.scanButtons}>
-            <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-              <Text style={styles.scanButtonText}>📸 Scan Item</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
-              <Text style={styles.galleryButtonText}>🖼️ Choose from Gallery</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
-    </View>
-  );
+        <View style={styles.scanButtons}>
+          <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
+            <Text style={styles.scanButtonText}>📸 Scan Item</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
+            <Text style={styles.galleryButtonText}>🖼️ Choose from Gallery</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    )}
+  </View>
+);
 };
