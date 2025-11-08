@@ -43,7 +43,10 @@ export default function HomeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [verifying, setVerifying] = useState(false);
 
-  const totalCO2Saved = actions.reduce((sum, action) => sum + action.co2, 0);
+  const totalCO2Saved = actions.reduce((sum, action) => {
+    const co2Value = Number(action.co2) || 0; // Convert to number
+    return sum + co2Value;
+  }, 0);
 
   useEffect(() => {
     if (user) {
@@ -179,7 +182,7 @@ export default function HomeScreen() {
       type: verification.actionType,
       name: getActionName(verification.actionType),
       points: getPointsForAction(verification.actionType),
-      co2: getCO2Savings(verification.actionType),
+      co2: Number(getCO2Savings(verification.actionType, verification.estimatedCO2Saved)), // FIX HERE
       emoji: getActionEmoji(verification.actionType),
       id: Date.now(),
       timestamp: new Date().toISOString(),
@@ -188,6 +191,7 @@ export default function HomeScreen() {
       confidence: verification.confidence,
     };
 
+    // Update local state immediately
     setActions([newAction, ...actions]);
     setPoints(points + newAction.points);
     setLastAction(newAction);
@@ -196,6 +200,7 @@ export default function HomeScreen() {
     setVerifying(false);
     setShowReward(true);
 
+    // Save to Firestore
     if (user) {
       await addEcoAction(user.uid, newAction, {
         displayName: user.displayName || undefined,
