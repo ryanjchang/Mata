@@ -17,6 +17,7 @@ import LeaderboardScreen from '../../components/LeaderboardScreen';
 import LoginScreen from '../../components/LoginScreen';
 import MenuModal from '../../components/MenuModal';
 import RewardModal from '../../components/RewardModal';
+import RewardsScreen from '../../components/RewardsScreen';
 import { styles } from '../../constants/styles';
 import { useAuth } from '../../hooks/useAuth';
 import { EcoAction, Screen } from '../../types';
@@ -27,7 +28,9 @@ import {
   getPointsForAction,
   verifyEcoAction,
 } from '../../utils/aiVerification';
+import { checkCooldown, formatCooldownTime } from '../../utils/cooldowns';
 import { addEcoAction, getUserData, updateUserProfile } from '../../utils/firestore';
+
 
 export default function HomeScreen() {
   const { user, loading, signIn, signUp, signOut } = useAuth();
@@ -43,7 +46,10 @@ export default function HomeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [verifying, setVerifying] = useState(false);
 
-  const totalCO2Saved = actions.reduce((sum, action) => sum + action.co2, 0);
+  const totalCO2Saved = actions.reduce((sum, action) => {
+    const co2Value = Number(action.co2) || 0; // Convert to number
+    return sum + co2Value;
+  }, 0);
 
   useEffect(() => {
     if (user) {
@@ -146,6 +152,21 @@ export default function HomeScreen() {
         return;
       }
 
+      // ADD COOLDOWN CHECK HERE - AFTER ECO-FRIENDLY CHECK, BEFORE CONFIDENCE CHECK
+      const cooldownCheck = checkCooldown(verification.actionType, actions);
+
+      if (cooldownCheck.onCooldown && cooldownCheck.timeRemaining) {
+        const timeLeft = formatCooldownTime(cooldownCheck.timeRemaining);
+        Alert.alert(
+          'Action on Cooldown ⏳',
+          `You recently logged a ${getActionName(verification.actionType)} action!\n\nPlease wait ${timeLeft} before logging this action again.\n\nThis prevents spam and ensures fair rewards.`,
+          [{ text: 'OK', onPress: () => { setVerifying(false); setShowCamera(false); setCapturedPhoto(null); } }]
+        );
+        setVerifying(false);
+        return;
+      }
+      // END OF COOLDOWN CHECK
+
       if (verification.confidence < 60) {
         Alert.alert(
           'Low Confidence ⚠️',
@@ -179,7 +200,7 @@ export default function HomeScreen() {
       type: verification.actionType,
       name: getActionName(verification.actionType),
       points: getPointsForAction(verification.actionType),
-      co2: getCO2Savings(verification.actionType),
+      co2: Number(getCO2Savings(verification.actionType, verification.estimatedCO2Saved)),
       emoji: getActionEmoji(verification.actionType),
       id: Date.now(),
       timestamp: new Date().toISOString(),
@@ -188,6 +209,7 @@ export default function HomeScreen() {
       confidence: verification.confidence,
     };
 
+    // Update local state immediately
     setActions([newAction, ...actions]);
     setPoints(points + newAction.points);
     setLastAction(newAction);
@@ -196,11 +218,46 @@ export default function HomeScreen() {
     setVerifying(false);
     setShowReward(true);
 
+    // Save to Firestore
     if (user) {
       await addEcoAction(user.uid, newAction, {
         displayName: user.displayName || undefined,
         email: user.email || undefined,
       });
+    }
+  };
+
+  const handleRewardRedeem = async (rewardId: string, cost: number) => {
+    console.log('🎁 Redeem called! Reward:', rewardId, 'Cost:', cost, 'Current points:', points);
+
+    // Deduct points locally
+    const newPoints = points - cost;
+    setPoints(newPoints);
+
+    console.log('💰 New points balance:', newPoints);
+
+    // Update Firestore
+    if (user) {
+      try {
+        console.log('📤 Updating Firestore...');
+        const result = await updateUserProfile(user.uid, user.displayName || '', user.email || '', newPoints);
+
+        if (result.success) {
+          console.log(`✅ Redeemed reward ${rewardId} for ${cost} points. New balance: ${newPoints}`);
+        } else {
+          console.error('❌ Firestore update failed:', result.error);
+          // Rollback if save fails
+          setPoints(points);
+          Alert.alert('Error', 'Failed to redeem reward. Please try again.');
+        }
+      } catch (error) {
+        console.error('❌ Error updating points after redemption:', error);
+        // Rollback if save fails
+        setPoints(points);
+        Alert.alert('Error', 'Failed to redeem reward. Please try again.');
+      }
+    } else {
+      console.log('⚠️ No user logged in');
     }
   };
 
@@ -227,7 +284,7 @@ export default function HomeScreen() {
           <LinearGradient colors={['#22c55e', '#16a34a']} style={styles.navLogo}>
             <Text style={styles.navLogoText}>🌿</Text>
           </LinearGradient>
-          <Text style={styles.navTitle}>EcoRewards</Text>
+          <Text style={styles.navTitle}>Mata</Text>
         </View>
         <View style={styles.navRight}>
           <View style={styles.pointsBadge}>
@@ -265,6 +322,14 @@ export default function HomeScreen() {
             History
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, currentScreen === 'rewards' && styles.tabActive]}
+          onPress={() => setCurrentScreen('rewards')}
+        >
+          <Text style={[styles.tabText, currentScreen === 'rewards' && styles.tabTextActive]}>
+            Shop
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Main Content */}
@@ -282,6 +347,9 @@ export default function HomeScreen() {
           <LeaderboardScreen user={user} points={points} />
         )}
         {currentScreen === 'history' && <HistoryScreen actions={actions} />}
+        {currentScreen === 'rewards' && (
+          <RewardsScreen points={points} onRedeem={handleRewardRedeem} />
+        )}
       </ScrollView>
 
       {/* Modals */}
