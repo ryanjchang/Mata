@@ -10,7 +10,7 @@ interface HistoryScreenProps {
 export default function HistoryScreen({ actions }: HistoryScreenProps) {
     return (
         <View style={styles.historyContent}>
-            <Text style={styles.pageTitle}>Your Journey</Text>
+            <Text style={styles.pageTitle}>🗺️ Your Journey</Text>
             {actions.length === 0 ? (
                 <View style={styles.emptyState}>
                     <Text style={styles.emptyEmoji}>✨</Text>

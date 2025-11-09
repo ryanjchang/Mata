@@ -8,9 +8,9 @@ export interface VerificationResult {
 }
 
 export const verifyEcoAction = async (imageUri: string): Promise<VerificationResult> => {
-
+    
     try {
-        console.log('🤖 Starting AI verification...');
+        console.log('Starting AI verification...');
 
         // Convert image to base64
         const response = await fetch(imageUri);

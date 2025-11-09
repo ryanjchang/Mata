@@ -177,3 +177,35 @@ export const updateUserProfile = async (
         return { success: false, error: error.message };
     }
 };
+
+export const updateUserQuests = async(userId: string, quests: any[]):Promise<{success: boolean; error?:string}> => {
+    try{
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef,{
+            quests: quests,
+            lastUpdated: new Date().toISOString(),
+        });
+        console.log('quests saved to firestone');
+        return {success:true};
+    }catch(error: any){
+        console.error('error saving quest', error);
+        return {success: false, error: error.message};
+    }  
+};
+
+export const getUserQuests = async(userId: string):Promise<any[] | null> =>{
+    try{
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()){
+            const data = userDoc.data();
+            return data.quests || null;
+        }
+        
+        return null;
+    }catch(error){
+        console.error('error getting quests', error);
+        return null;
+    }
+}

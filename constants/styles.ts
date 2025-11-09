@@ -912,4 +912,113 @@ export const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
     },
+
+    //Quest styles
+questContent: {
+    padding: 16,
+    paddingBottom: 24,
+    backgroundColor: '#f9fafb',
+},
+questTitle: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    color: '#111827',
+    marginBottom: 2,
+},
+subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 12,
+},
+questContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+},
+questBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    marginBottom: 8,
+},
+questBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6b7280',
+},
+questName: {
+    color: '#111827',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    lineHeight: 24,
+},
+rewardsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+},
+rewardBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dcfce7',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    gap: 4,
+    flex: 1,
+},
+carbonBadge: {
+    backgroundColor: '#dbeafe',
+},
+rewardIcon: {
+    fontSize: 16,
+},
+rewardText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+},
+progressSection: {
+    marginTop: 2,
+},
+progressBarContainer: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 6,
+},
+progressBarFill: {
+    height: '100%',
+    backgroundColor: '#10b981',
+    borderRadius: 10,
+},
+progressText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+},
+completedBanner: {
+    backgroundColor: '#d1fae5',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginTop: 2,
+},
+completedText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+    textAlign: 'center',
+},
 });

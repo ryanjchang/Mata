@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import CameraModal from '../../components/CameraModal';
 import DashboardScreen from '../../components/DashboardScreen';
@@ -18,9 +19,11 @@ import LoginScreen from '../../components/LoginScreen';
 import MenuModal from '../../components/MenuModal';
 import RewardModal from '../../components/RewardModal';
 import RewardsScreen from '../../components/RewardsScreen';
+import QuestScreen from '../../components/QuestScreen';
+import PointsDisplay  from '../../components/PointsDisplay';
 import { styles } from '../../constants/styles';
 import { useAuth } from '../../hooks/useAuth';
-import { EcoAction, Screen } from '../../types';
+import { EcoAction, Screen, Quest} from '../../types';
 import {
   getActionEmoji,
   getActionName,
@@ -29,8 +32,8 @@ import {
   verifyEcoAction,
 } from '../../utils/aiVerification';
 import { checkCooldown, formatCooldownTime } from '../../utils/cooldowns';
-import { addEcoAction, getUserData, updateUserProfile } from '../../utils/firestore';
-
+import { addEcoAction, getUserData, updateUserProfile, updateUserQuests, getUserQuests } from '../../utils/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const { user, loading, signIn, signUp, signOut } = useAuth();
@@ -46,8 +49,32 @@ export default function HomeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [verifying, setVerifying] = useState(false);
 
+const waterQuest: Quest = {
+  type: "daily",
+  name: "Bottle",
+  description: "Use a reusable water bottle",
+  id: 0,
+  points: 20,
+  co2: 50,
+  progress: 0,
+  goal: 1,
+  completed: false,
+}
+const bikeQuest: Quest = {
+  type: "weekly",
+  name: "Bike",
+  description: "Commute by biking",
+  id: 1,
+  points: 120,
+  co2: 30,
+  progress: 0,
+  goal: 3,
+  completed: false,
+}
+const [quests, setQuests] = useState<Quest[]>([waterQuest, bikeQuest]);
+
   const totalCO2Saved = actions.reduce((sum, action) => {
-    const co2Value = Number(action.co2) || 0; // Convert to number
+    const co2Value = Number(action.co2) || 0; 
     return sum + co2Value;
   }, 0);
 
@@ -67,44 +94,72 @@ export default function HomeScreen() {
   }, [showReward]);
 
   const loadUserData = async () => {
-    if (!user) return;
+  if (!user) return;
 
-    try {
-      console.log('👤 Loading data for user:', user.uid);
-      console.log('👤 User displayName:', user.displayName);
-      console.log('👤 User email:', user.email);
+  try {
+    console.log('Loading data for user:', user.uid);
 
-      // Update profile in Firestore if we have displayName
-      if (user.displayName && user.email) {
-        console.log('🔄 Updating user profile...');
-        await updateUserProfile(user.uid, user.displayName, user.email);
-      }
-
-      console.log('📥 Fetching user data from Firestore...');
-      const result = await getUserData(user.uid, {
-        displayName: user.displayName || undefined,
-        email: user.email || undefined,
-      });
-
-      console.log('📊 Result:', result);
-
-      if (result.success && result.data) {
-        setPoints(result.data.points || 0);
-        setActions(result.data.actions || []);
-
-        if (result.offline) {
-          console.log('📱 App working in offline mode');
-        }
-
-        console.log('✅ User data loaded successfully');
-      } else {
-        console.log('❌ Failed to load user data:', result.error);
-      }
-    } catch (error: any) {
-      console.error('⚠️ Error in loadUserData:', error);
-      console.error('Error details:', error.message);
+    if (user.displayName && user.email) {
+      console.log('Updating user profile...');
+      await updateUserProfile(user.uid, user.displayName, user.email);
     }
-  };
+
+    console.log('Fetching user data from Firestore...');
+    const result = await getUserData(user.uid, {
+      displayName: user.displayName || undefined,
+      email: user.email || undefined,
+    });
+
+    console.log('Result:', result);
+
+    if (result.success && result.data) {
+      setPoints(result.data.points || 0);
+      setActions(result.data.actions || []);
+      
+      // Load quests
+      console.log('Loading quests...');
+      const savedQuests = await getUserQuests(user.uid);
+      
+      if (savedQuests && savedQuests.length > 0) {
+        console.log('Loaded saved quests');
+
+        const lastReset = await AsyncStorage.getItem('lastQuestReset');
+        const today = new Date().toDateString();
+
+        if (lastReset !== today) {
+          console.log('resetting daily quests');
+          
+          const resetQuests = savedQuests.map(quest => ({
+            ...quest,
+            progress: quest.type === 'daily' ? 0 : quest.progress,
+            completed: quest.type === 'daily' ? false : quest.completed,
+          }));
+
+          setQuests(resetQuests);
+          await updateUserQuests(user.uid, resetQuests);
+          await AsyncStorage.setItem('lastQuestReset', today); 
+        } else {
+          setQuests(savedQuests);
+        }
+      } else {
+        console.log('No saved quests, using defaults');
+        setQuests([waterQuest, bikeQuest]);
+        await updateUserQuests(user.uid, [waterQuest, bikeQuest]);
+      }
+
+      if (result.offline) {
+        console.log('App working in offline mode');
+      }
+
+      console.log('✅ User data loaded successfully');
+    } else {
+      console.log('❌ Failed to load user data:', result.error);
+    }
+  } catch (error: any) {
+    console.error('⚠️ Error in loadUserData:', error);
+    console.error('Error details:', error.message);
+  }
+};
 
   const handleLogout = async () => {
     await signOut();
@@ -132,13 +187,18 @@ export default function HomeScreen() {
     setCapturedPhoto(null);
   };
 
-  const verifyAction = async () => {
+  const verifyAction = async (isRetry: boolean = false) => {
     if (!capturedPhoto) return;
 
     setVerifying(true);
 
     try {
-      console.log('🤖 Calling GPT-4 Vision API...');
+      if (isRetry) {
+        console.log('🔄 Retrying verification...');
+      } else {
+        console.log('🤖 Calling GPT-4 Vision API...');
+      }
+      
       const verification = await verifyEcoAction(capturedPhoto);
       console.log('✅ AI Result:', verification);
 
@@ -152,8 +212,6 @@ export default function HomeScreen() {
         return;
       }
 
-      // ADD COOLDOWN CHECK HERE - AFTER ECO-FRIENDLY CHECK, BEFORE CONFIDENCE CHECK
-
       const cooldownCheck = checkCooldown(verification.actionType, actions);
 
       if (cooldownCheck.onCooldown && cooldownCheck.timeRemaining) {
@@ -166,7 +224,6 @@ export default function HomeScreen() {
         setVerifying(false);
         return;
       }
-      // END OF COOLDOWN CHECK
 
       if (verification.confidence < 60) {
         Alert.alert(
@@ -184,13 +241,26 @@ export default function HomeScreen() {
       await saveVerifiedAction(verification);
     } catch (error: any) {
       console.error('❌ Verification error:', error);
+      
+      // Auto-retry once on timeout
+      if ((error.name === 'AbortError' || error.message.includes('timeout')) && !isRetry) {
+        console.log('⏱️ Timeout detected, automatically retrying...');
+        Alert.alert(
+          'Retrying...',
+          'The request timed out. Automatically retrying once...',
+          [{ text: 'OK' }]
+        );
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return verifyAction(true); // Retry with flag set to true
+      }
+      
       setVerifying(false);
       Alert.alert(
         'Verification Failed',
-        `Error: ${error.message}\n\nMake sure your OpenAI API key is set correctly in utils/aiVerification.ts`,
+        `Error: ${error.message}\n\n${isRetry ? 'Retry also failed. ' : ''}Make sure your OpenAI API key is set correctly in utils/aiVerification.ts`,
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Try Again', onPress: verifyAction }
+          { text: 'Try Again', onPress: () => verifyAction(false) }
         ]
       );
     }
@@ -210,6 +280,25 @@ export default function HomeScreen() {
       confidence: verification.confidence,
     };
 
+    // Update quest progress
+  const updatedQuests = quests.map(quest => {
+    // Check if action matches quest (e.g., water action completes water quest)
+    if (quest.name.toLowerCase() === verification.actionType.toLowerCase()) {
+      console.log(quest.progress)
+      const newProgress = quest.progress + 1;
+      const isCompleted = newProgress >= quest.goal;
+      console.log(quest)
+      return {
+        ...quest,
+        progress: newProgress,
+        completed: isCompleted
+      };
+    }
+    return quest;
+  });
+  
+  setQuests(updatedQuests);
+
     // Update local state immediately
     setActions([newAction, ...actions]);
     setPoints(points + newAction.points);
@@ -225,6 +314,7 @@ export default function HomeScreen() {
         displayName: user.displayName || undefined,
         email: user.email || undefined,
       });
+      await updateUserQuests(user.uid, updatedQuests);
     }
   };
 
@@ -283,13 +373,13 @@ export default function HomeScreen() {
       <View style={styles.navbar}>
         <View style={styles.navLeft}>
           <LinearGradient colors={['#22c55e', '#16a34a']} style={styles.navLogo}>
-            <Text style={styles.navLogoText}>🌿</Text>
+            <Image style={{width:35, height:35}} source={require('../../turtle-icon.png')} />
           </LinearGradient>
           <Text style={styles.navTitle}>Mata</Text>
         </View>
         <View style={styles.navRight}>
           <View style={styles.pointsBadge}>
-            <Text style={styles.pointsText}>{points} pts</Text>
+            <PointsDisplay points={points} word="pts" style={styles.pointsText}/>
           </View>
           <TouchableOpacity onPress={() => setShowMenu(true)}>
             <Text style={styles.menuIcon}>☰</Text>
@@ -331,6 +421,18 @@ export default function HomeScreen() {
             Shop
           </Text>
         </TouchableOpacity>
+        
+
+<TouchableOpacity
+  style={[styles.tab, currentScreen === 'quests' && styles.tabActive]}
+  onPress={() => setCurrentScreen('quests')}
+>
+  <Text style={[styles.tabText, currentScreen === 'quests' && styles.tabTextActive]}>
+    Quests
+  </Text>
+</TouchableOpacity>
+
+
       </ScrollView>
 
       {/* Main Content */}
@@ -351,6 +453,7 @@ export default function HomeScreen() {
         {currentScreen === 'rewards' && (
           <RewardsScreen points={points} onRedeem={handleRewardRedeem} />
         )}
+        {currentScreen === "quests" && <QuestScreen quests={quests} />}
       </ScrollView>
 
       {/* Modals */}
