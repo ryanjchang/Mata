@@ -151,12 +151,12 @@ const [quests, setQuests] = useState<Quest[]>([waterQuest, bikeQuest]);
         console.log('App working in offline mode');
       }
 
-      console.log('✅ User data loaded successfully');
+      console.log('User data loaded successfully');
     } else {
-      console.log('❌ Failed to load user data:', result.error);
+      console.log('Failed to load user data:', result.error);
     }
   } catch (error: any) {
-    console.error('⚠️ Error in loadUserData:', error);
+    console.error('Error in loadUserData:', error);
     console.error('Error details:', error.message);
   }
 };
@@ -194,13 +194,13 @@ const [quests, setQuests] = useState<Quest[]>([waterQuest, bikeQuest]);
 
     try {
       if (isRetry) {
-        console.log('🔄 Retrying verification...');
+        console.log('Retrying verification...');
       } else {
-        console.log('🤖 Calling GPT-4 Vision API...');
+        console.log('Calling GPT-4 Vision API...');
       }
       
       const verification = await verifyEcoAction(capturedPhoto);
-      console.log('✅ AI Result:', verification);
+      console.log('AI Result:', verification);
 
       if (!verification.isEcoFriendly) {
         Alert.alert(

@@ -4,7 +4,7 @@ export interface VerificationResult {
     confidence: number;
     reasoning: string;
     estimatedCO2Saved: number; // in grams
-    impactDescription: string; // e.g., "Equivalent to 2km not driven by car"
+    impactDescription: string; // "Equivalent to 2km not driven by car"
 }
 
 export const verifyEcoAction = async (imageUri: string): Promise<VerificationResult> => {
@@ -91,30 +91,30 @@ estimatedCO2Saved should be a realistic number in grams based on the visible act
 
         if (!openaiResponse.ok) {
             const errorData = await openaiResponse.text();
-            console.error('❌ OpenAI API Error:', errorData);
+            console.error('OpenAI API Error:', errorData);
             throw new Error(`API Error: ${openaiResponse.status} - ${errorData}`);
         }
 
         const data = await openaiResponse.json();
-        console.log('✅ OpenAI Response:', data);
+        console.log('OpenAI Response:', data);
 
         const content = data.choices[0].message.content;
-        console.log('📝 Raw content:', content);
+        console.log('Raw content:', content);
 
         // Parse JSON from response
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            console.error('❌ No JSON found in response');
+            console.error('No JSON found in response');
             throw new Error('Invalid response format');
         }
 
         const result: VerificationResult = JSON.parse(jsonMatch[0]);
-        console.log('✅ Parsed result:', result);
+        console.log('Parsed result:', result);
 
         return result;
 
     } catch (error) {
-        console.error('❌ AI Verification Error:', error);
+        console.error('AI Verification Error:', error);
 
         // Re-throw the error so we can handle it in the UI
         throw error;
