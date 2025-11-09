@@ -26,13 +26,13 @@ Mata gamifies sustainability by:
 
 ##  **Features**
 
-### 🤖 **AI-Powered Action Verification**
+### **AI-Powered Action Verification**
 - GPT-4 Vision API analyzes photos to verify eco-friendly actions
 - Detects: reusable bottles, recycling, biking, composting, and more
 - Provides confidence scores and reasoning
 - Estimates CO₂ savings for each action
 
-### 📱 **Core Functionality**
+### **Core Functionality**
 - **Sign Up/Login** - Email/password authentication via Firebase
 - **Camera Integration** - Native camera to capture eco-actions in real-time
 - **Points System** - Earn points based on action type and impact
