@@ -58,7 +58,6 @@ Mata gamifies sustainability by:
 | **Firestore** | Cloud database for user data persistence |
 | **OpenAI GPT-4 Vision** | AI image analysis and verification |
 | **Expo Camera** | Native camera access |
-| **Linear Gradient** | Beautiful UI animations |
 | **AsyncStorage** | Local auth persistence |
 
 ---
