@@ -104,3 +104,10 @@ Mata gamifies sustainability by:
 - [ ] Integration with fitness trackers for bike commutes
 
 ---
+
+## **Set Up**
+
+````bash
+cd EcoScan
+npx expo start
+````
