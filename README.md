@@ -57,10 +57,6 @@ Mata gamifies sustainability by:
 | **Firebase Auth** | User authentication |
 | **Firestore** | Cloud database for user data persistence |
 | **OpenAI GPT-4 Vision** | AI image analysis and verification |
-| **Expo Camera** | Native camera access |
-| **Linear Gradient** | Beautiful UI animations |
-| **AsyncStorage** | Local auth persistence |
-
 ---
 
 ## 📸 **Screenshots**
@@ -120,33 +116,6 @@ Beautiful gradient interface with email/password authentication
 
 ---
 
-## 🔥 **Firebase Database Schema**
-
-### Users Collection
-```typescript
-users/{userId}
-  ├── email: string
-  ├── name: string
-  ├── points: number
-  ├── actions: array<EcoAction>
-  └── createdAt: timestamp
-
-EcoAction {
-  id: number
-  type: 'bottle' | 'recycle' | 'bike' | 'compost' | 'trash' | 'other'
-  name: string
-  points: number
-  co2: number
-  emoji: string
-  timestamp: string
-  image: string (URI)
-  aiReasoning: string
-  confidence: number
-}
-```
-
----
-
 ## 🎨 **Design Principles**
 
 - **Green-first color palette** - Emerald and teal gradients
@@ -160,15 +129,9 @@ EcoAction {
 ## 🚧 **Future Enhancements**
 
 - [ ] Social features (share achievements, challenge friends)
-- [ ] Rewards marketplace (redeem points for eco-products)
 - [ ] Daily/weekly challenges
 - [ ] Push notifications for reminders
-- [ ] Team competitions (schools, companies)
 - [ ] Carbon offset partnerships
-- [ ] Upload to Firebase Storage for persistent images
-- [ ] Backend API (move OpenAI key server-side)
-- [ ] Android/iOS native builds via EAS
-- [ ] Advanced analytics dashboard
 - [ ] Integration with fitness trackers for bike commutes
 
 ---
