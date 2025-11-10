@@ -24,6 +24,9 @@ Mata gamifies sustainability by:
 
 ---
 
+## **Dev Post**
+- [Dev Post](https://devpost.com/software/mata-2zoh1e)
+
 ##  **Features**
 
 ### **AI-Powered Action Verification**
@@ -108,6 +111,7 @@ Mata gamifies sustainability by:
 ## **Set Up**
 
 Install Expo Go on your mobile device. Ensure your computer and mobile device are on the same network.
+Add const API_KEY = "[Your API Key]"; to aiVerification.ts
 ````bash
 cd EcoScan
 npx expo start
